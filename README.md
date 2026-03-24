@@ -96,8 +96,6 @@ docker run -d \
 Create a `docker-compose.yml`:
 
 ```yaml
-version: '3.8'
-
 services:
   cups:
     build: .
@@ -117,7 +115,7 @@ volumes:
 
 Then run:
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ## Advanced Configuration
@@ -230,4 +228,3 @@ Issues and pull requests are welcome!
 For issues with this Docker image, please open an issue on GitHub.
 
 For CUPS-related issues, refer to the [CUPS documentation](https://www.cups.org/documentation.html).
-```
