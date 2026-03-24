@@ -1,6 +1,3 @@
-Here's a comprehensive README.md for your CUPS Docker image:
-
-```markdown
 # CUPS Docker Image
 
 A Docker image for CUPS (Common Unix Printing System) print server, providing a complete printing solution in a containerized environment.
