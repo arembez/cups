@@ -1,6 +1,6 @@
 # CUPS Docker Image
 
-A Docker image for CUPS (Common Unix Printing System) print server, providing a complete printing solution in a containerized environment.
+A Docker image for CUPS (Common Unix Printing System) print server, providing a complete printing solution in a containerized environment. Includes Kubernetes deployment automation for easy container orchestration.
 
 ## Features
 
@@ -10,6 +10,7 @@ A Docker image for CUPS (Common Unix Printing System) print server, providing a 
 - Supports both USB and network printers
 - Includes HPLIP for HP printer support
 - Persistent configuration through volume mounting
+- Kubernetes deployment with automated installation
 
 ## Quick Start
 
@@ -48,6 +49,8 @@ http://localhost:631
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `ADMIN_PASSWORD` | Admin user password | `admin` |
+| `NAMESPACE` | Kubernetes namespace | `cups` |
+| `APP_NAME` | Application name | `cups` |
 
 ### Volumes
 
@@ -61,7 +64,7 @@ http://localhost:631
 |------|----------|-------------|
 | 631 | TCP | CUPS web interface and print service |
 
-## Usage Examples
+## Docker Usage Examples
 
 ### Basic Usage
 
@@ -118,21 +121,92 @@ Then run:
 docker compose up -d
 ```
 
-## Advanced Configuration
+## Kubernetes Deployment
+
+This project includes automated Kubernetes deployment with a comprehensive Makefile. The deployment creates:
+- Namespace (configurable via `NAMESPACE`)
+- Persistent Volume Claim for CUPS configuration
+- Service with LoadBalancer for external access
+- Deployment with CUPS container
+- Secret for admin credentials
+
+### Prerequisites
+
+- Kubernetes cluster (v1.19+)
+- `kubectl` configured with cluster access
+- Default StorageClass for PVC
+- LoadBalancer support (or use port-forwarding)
+
+### Quick Kubernetes Deployment
+
+```bash
+# Clone the repository
+git clone https://github.com/arembez/cups.git
+cd k8s
+
+# Deploy with default settings
+make install
+
+# OR Deploy with custom namespace and app name
+# make install NAMESPACE=printing APP_NAME=cups-server
+```
+
+The installation process will:
+1. Check Kubernetes prerequisites
+2. Create the namespace
+3. Generate or prompt for admin password
+4. Apply all manifests
+5. Wait for deployment readiness
+6. Copy custom CUPS configuration (if available)
+7. Display access information
+
+### Deployment Commands
+
+| Command | Description |
+|---------|-------------|
+| `make install` | Full installation with prerequisites check |
+| `make update` | Update/Re-deploy all manifests |
+| `make clean` | Remove everything (requires confirmation) |
+| `make logs` | Show CUPS logs |
+| `make shell` | Open shell in CUPS pod |
+| `make status` | Show deployment status |
+
+### Environment Variables for Make
+
+You can customize the deployment by setting some variables or create a `.env` file:
+
+```env
+NAMESPACE=printing
+APP_NAME=cups-server
+ADMIN_PASSWORD=mysecurepassword
+```
+
+### Accessing the CUPS Web Interface in Kubernetes
+
+After deployment, you can access the CUPS web interface:
+
+**If LoadBalancer is available:**
+```
+http://<loadbalancer-ip>:631
+```
+
+**If LoadBalancer is not available:**
+```bash
+# Port-forward to access locally
+kubectl port-forward -n cups svc/cups 631:631
+
+# Then access at http://localhost:631
+```
 
 ### Custom CUPS Configuration
 
-To customize CUPS settings:
+To apply custom CUPS configuration during deployment:
 
-1. Stop the container
-2. Edit the configuration files in your volume mount
-3. Restart the container
+1. Create a `cupsd.conf` file in the same directory as the Makefile
+2. The installation process will automatically copy it to the pod
+3. CUPS will be reloaded to apply the configuration
 
-```bash
-docker stop cups-server
-# Edit /path/to/cups-config/cupsd.conf
-docker start cups-server
-```
+## Advanced Configuration
 
 ### Printer Drivers
 
@@ -142,77 +216,20 @@ The image includes the following driver packages:
 - `openprinting-ppds` - OpenPrinting PPD files
 - `hplip` - HP printer drivers
 
-### Adding Additional Drivers
-
-If you need additional printer drivers, you can extend this image:
-
-```dockerfile
-FROM arembez/cups:latest
-
-RUN apt-get update && \
-    apt-get install -y \
-    your-additional-driver-package && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-```
-
 ## Security Notes
 
-- The container runs with `--privileged` flag to allow USB device access
 - Default admin password should be changed in production
 - Consider using HTTPS for remote access
 - Restrict network access to trusted hosts when possible
 
-## Troubleshooting
-
-### Check CUPS Status
+## Reset Admin Password
 
 ```bash
-docker exec cups-server cupsctl
-docker exec cups-server lpstat -t
-```
+# Docker
+docker exec -it cups-server bash -c passwd admin
 
-### View Logs
-
-```bash
-# Container logs
-docker logs cups-server
-
-# CUPS error log
-docker exec cups-server tail -f /var/log/cups/error_log
-```
-
-### USB Printer Not Detected
-
-Ensure USB devices are passed through:
-
-```bash
-docker run -d \
-  --name cups-server \
-  --privileged \
-  -v /dev/bus/usb:/dev/bus/usb \
-  -p 631:631 \
-  arembez/cups:latest
-```
-
-### Reset Admin Password
-
-```bash
-docker exec -it cups-server bash
-passwd admin
-# Enter new password
-exit
-```
-
-## Building from Source
-
-```bash
-git clone your-repo-url
-cd cups-docker
-docker build -t cups:latest \
-  --build-arg VCS_REF=$(git rev-parse --short HEAD) \
-  --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
-  .
+# Kubernetes
+kubectl exec -it -n cups deployment/cups -- bash -c passwd admin
 ```
 
 ## License

@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${APP_NAME}
+  labels:
+    app: ${APP_NAME}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${APP_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${APP_NAME}
+    spec:
+      containers:
+      - name: ${APP_NAME}
+        image: arembez/cups
+        env:
+        - name: ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ${APP_NAME}-admin
+              key: password
+        - name: TZ
+          value: "Europe/Moscow"
+        ports:
+        - containerPort: 631
+          name: http
+          protocol: TCP
+        volumeMounts:
+        - name: ${APP_NAME}-data
+          mountPath: /etc/cups
+        - name: ${APP_NAME}-data
+          mountPath: /var/spool/cups
+          subPath: spool
+        - name: ${APP_NAME}-data
+          mountPath: /var/log/cups
+          subPath: log
+        securityContext:
+          privileged: true
+      volumes:
+      - name: ${APP_NAME}-data
+        persistentVolumeClaim:
+          claimName: ${APP_NAME}-data
