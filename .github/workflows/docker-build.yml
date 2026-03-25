@@ -40,7 +40,7 @@ jobs:
           fi
           
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
-
+          
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
@@ -50,9 +50,8 @@ jobs:
           build-args: |
             VCS_REF=${{ github.sha }}
             BUILD_DATE=${{ github.event.head_commit.timestamp }}
-
+            
       - name: Update Docker Hub description
-        if: github.event_name == 'push' && contains(github.event.head_commit.modified, 'README.md')
         uses: peter-evans/dockerhub-description@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
