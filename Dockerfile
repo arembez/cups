@@ -1,6 +1,5 @@
 # base image
-ARG ARCH=amd64
-FROM $ARCH/debian:bookworm-slim
+FROM debian:trixie-slim
 
 # args
 ARG VCS_REF

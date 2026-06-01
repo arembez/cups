@@ -4,7 +4,7 @@ A Docker image for CUPS (Common Unix Printing System) print server, providing a 
 
 ## Features
 
-- Based on Debian Bookworm Slim for minimal footprint
+- Based on Debian Trixie Slim for minimal footprint
 - Includes complete CUPS installation with printer drivers
 - Pre-configured with admin user and remote administration access
 - Supports both USB and network printers
