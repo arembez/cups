@@ -4,11 +4,11 @@ A Docker image for CUPS (Common Unix Printing System) print server, providing a 
 
 ## Features
 
-- Based on Debian Trixie Slim for minimal footprint
-- Includes complete CUPS installation with printer drivers
-- Pre-configured with admin user and remote administration access
+- Based on **Debian 12** Bookworm Slim for minimal footprint
+- Includes **minimal CUPS** installation with printer drivers (No GUI, No Fax, No Scan, No Docs)
+- Pre-configured with admin user and remote administration access 
 - Supports both USB and network printers
-- Includes HPLIP for HP printer support
+- Includes latest **HPLIP v3.26.4** for HP printer support (https://github.com/arembez/hplip)
 - Persistent configuration through volume mounting
 - Kubernetes deployment with automated installation
 
@@ -35,7 +35,7 @@ docker run -d \
 
 Open your browser and navigate to:
 ```
-http://localhost:631
+https://localhost/admin:631
 ```
 
 **Default Credentials:**
@@ -89,7 +89,7 @@ docker run -d \
 
 ### Connect Printers
 
-1. Access the CUPS web interface at `http://localhost:631`
+1. Access the CUPS web interface at `https://localhost/admin:631`
 2. Navigate to "Administration" tab
 3. Click "Add Printer"
 4. Follow the wizard to configure your printer
@@ -138,6 +138,8 @@ This project includes automated Kubernetes deployment with a comprehensive Makef
 - LoadBalancer support (or use port-forwarding)
 
 ### Quick Kubernetes Deployment
+
+Run on a host with kubectl installed:
 
 ```bash
 # Clone the repository
